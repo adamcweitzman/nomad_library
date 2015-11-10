@@ -23,21 +23,41 @@ router.get('/books', function(req, res, next) {
 	});
 });
 
+// create a sample user
 router.get('/setup', function(req, res) {
-
-  // create a sample user
   var nick = new User({ 
     name: 'nick', 
     password: 'nick',
   });
-
   // save the sample user
   nick.save(function(err) {
     if (err) throw err;
-
     console.log('User saved successfully');
     res.json({ success: true });
   });
+});
+  
+router.get('/new', function(req, res) {
+  res.render('new')
+})
+
+// create new user from params
+router.post('/new_user', function(req, res) {
+  var user = new User({
+    name: req.body.name,
+    password: req.body.password,
+    email: req.body.email,
+    age: req.body.age,
+    nationality: req.body.nationality,
+    picture_url: req.body.picture_url,
+  });
+
+  user.save(function(err){
+    if (err) throw err;
+
+    console.log('User Saved!');
+    res.json({ success: true });
+  })
 });
 
 router.get('/users', function(req, res) {
@@ -84,3 +104,7 @@ router.post('/authenticate', function(req, res) {
 });   
 
 module.exports = router;
+
+
+
+
