@@ -8,7 +8,8 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var mongoose = require('mongoose');
 var db = require('./model/db');
-
+var config = require('./config');
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var app = express();
 
 // view engine setup
