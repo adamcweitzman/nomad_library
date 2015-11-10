@@ -8,6 +8,6 @@ var locationSchema = new mongoose.Schema({
   book_ids: Array
 });
 
-var Location = mongoose.model('Location', locationSchema);
+var Location = mongoose.model('Locations', locationSchema);
 // Make this available to our other files
 module.exports = Location;

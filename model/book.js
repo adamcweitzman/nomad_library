@@ -12,6 +12,6 @@ var bookSchema = new mongoose.Schema({
   location_ids: Array
 });
 
-var Book = mongoose.model('Book', bookSchema);
+var Book = mongoose.model('Books', bookSchema);
 // Make this available to our other files
 module.exports = Book;

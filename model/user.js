@@ -11,7 +11,7 @@ var userSchema = new mongoose.Schema({
   current_location: String
 });
 
-var User = mongoose.model('User', userSchema);
+var User = mongoose.model('Users', userSchema);
 // Make this available to our other files
 module.exports = User;
 
