@@ -10,10 +10,61 @@ var Books = require('../model/book');
 var User = require('../model/user');
 var jwt = require('jsonwebtoken');
 var config = require('../config');
+var bcrypt = require('bcrypt');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Nomad Library' });
+});
+
+router.get('/new', function(req, res) {
+  res.render('new');
+})
+
+router.get('/login', function(req, res) {
+  res.render('login');
+//    // User.findOne({'name': name }, function(err, users) {
+//    //    console.log(users);
+//    // }
+});
+
+// route middleware to verify a token
+router.get('/*' , function(req, res, next) {
+  console.log('in all routes');
+  // decode token
+  if (globalToken.token) {
+
+    var token = { body: globalToken.token }
+
+    // verifies secret and checks exp
+    jwt.verify(token.body, 'ilovescotchyscotch', function(err, decoded) {      
+      if (err) {
+        console.log(token)
+        return res.json({ success: false, message: 'Failed to authenticate token.' });    
+      } else {
+        // if everything is good, save to request for use in other routes
+        req.decoded = decoded;    
+        next();
+        console.log('authenticated token')
+      }
+    });
+
+  } else {
+
+    // if there is no token
+    // return an error
+    return res.status(403).send({ 
+        success: false, 
+        message: 'No token provided.' 
+    });
+    
+  }
+});
+
+router.get('/profile', function(req, res, next) {
+  res.render('profile');
+  console.log(req.headers.cookie)
+  console.log(globalToken)
 });
 
 router.get('/books', function(req, res, next) {
@@ -37,9 +88,6 @@ router.get('/setup', function(req, res) {
   });
 });
   
-router.get('/new', function(req, res) {
-  res.render('new')
-})
 
 // create new user from params
 router.post('/new_user', function(req, res) {
@@ -56,7 +104,7 @@ router.post('/new_user', function(req, res) {
     if (err) throw err;
 
     console.log('User Saved!');
-    res.json({ success: true });
+    res.render('login');
   })
 });
 
@@ -67,40 +115,46 @@ router.get('/users', function(req, res) {
 });
 
 router.post('/authenticate', function(req, res) {
+  var name = req.body.name;
+  var password = req.body.password;
 
-  // find the user
   User.findOne({
-    name: req.body.name
+    name: name
   }, function(err, user) {
 
     if (err) throw err;
 
     if (!user) {
       res.json({ success: false, message: 'Authentication failed. User not found.' });
-    } else if (user) {
+    }
+    else if (user) {
 
-      // check if password matches
-      if (user.password != req.body.password) {
-        res.json({ success: false, message: 'Authentication failed. Wrong password.' });
-      } else {
+      bcrypt.compare(password, user.password, function(err, result) {
+        if (!result) {
+          res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+        }
+        else {
+          // if user is found and password is right
+          // create a token
+          var token = jwt.sign(user, config.secret, {
+            expiresInMinutes: 1440 // expires in 24 hours
+          });
 
-        // if user is found and password is right
-        // create a token
-        var token = jwt.sign(user, config.secret, {
-          expiresInMinutes: 1440 // expires in 24 hours
-        });
+          req.headers.cookie = req.body.name
+          console.log(req.headers.cookie)
 
-        // return the information including token as JSON
-        res.json({
-          success: true,
-          message: 'Enjoy your token!',
-          token: token
-        });
-      }   
+          globalToken = { token: token, name: req.body.name }
+          res.json({
+            success: true,
+            message: 'Enjoy your token!',
+            token: token
+          });
+        }
+      });
 
     }
-
   });
+
 });   
 
 module.exports = router;
