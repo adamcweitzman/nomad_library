@@ -37,13 +37,14 @@ router.get('/*' , function(req, res, next) {
     var token = { body: globalToken.token }
 
     // verifies secret and checks exp
-    jwt.verify(token.body, 'ilovescotchyscotch', function(err, decoded) {      
+    jwt.verify(token.body, config.secret, function(err, decoded) {      
       if (err) {
         console.log(token)
         return res.json({ success: false, message: 'Failed to authenticate token.' });    
       } else {
         // if everything is good, save to request for use in other routes
-        req.decoded = decoded;    
+        req.decoded = decoded;
+        console.log(decoded)    
         next();
         console.log('authenticated token')
       }
@@ -61,10 +62,18 @@ router.get('/*' , function(req, res, next) {
   }
 });
 
+router.get('/logout', function(req,res,next) {
+  token.body = ""
+  res.redirect('login')
+})
+
 router.get('/profile', function(req, res, next) {
-  res.render('profile');
   console.log(req.headers.cookie)
   console.log(globalToken)
+  User.findOne({'name': req.decoded.name}, function(err, users) {
+    res.render('profile', {name: req.decoded.name});
+  });
+  console.log("coming from profile",req.decoded)
 });
 
 router.get('/books', function(req, res, next) {
@@ -144,11 +153,7 @@ router.post('/authenticate', function(req, res) {
           console.log(req.headers.cookie)
 
           globalToken = { token: token, name: req.body.name }
-          res.json({
-            success: true,
-            message: 'Enjoy your token!',
-            token: token
-          });
+          res.redirect('/profile')
         }
       });
 
