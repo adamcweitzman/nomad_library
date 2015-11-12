@@ -6,11 +6,12 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var Books = require('../model/book');
+var Book = require('../model/book');
 var User = require('../model/user');
 var jwt = require('jsonwebtoken');
 var config = require('../config');
 var bcrypt = require('bcrypt');
+var user_id = "";
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -23,37 +24,31 @@ router.get('/new', function(req, res) {
 
 router.get('/login', function(req, res) {
   res.render('login', {name: "hi"});
-//    // User.findOne({'name': name }, function(err, users) {
-//    //    console.log(users);
-//    // }
 });
 
 // route middleware to verify a token
 router.get('/*' , function(req, res, next) {
-  console.log('in all routes');
-  // decode token
+
   if (globalToken.token) {
 
     var token = { body: globalToken.token }
 
-    // verifies secret and checks exp
+
     jwt.verify(token.body, config.secret, function(err, decoded) {      
       if (err) {
-        console.log(token)
+
         return res.json({ success: false, message: 'Failed to authenticate token.' });    
       } else {
-        // if everything is good, save to request for use in other routes
+
         req.decoded = decoded;
-        // console.log(decoded)    
+ 
         next();
-        // console.log('authenticated token')
+
       }
     });
 
   } else {
 
-    // if there is no token
-    // return an error
     return res.status(403).send({ 
         success: false, 
         message: 'No token provided.' 
@@ -65,15 +60,20 @@ router.get('/*' , function(req, res, next) {
 router.get('/logout', function(req,res,next) {
   globalToken.token = ""
   res.redirect('login')
-})
+});
 
 router.get('/profile/:name', function(req, res, next) {
-  // console.log(globalToken)
+  user_id = req.decoded._id
   User.findOne({'name': req.decoded.name}, function(err, users) {
-    res.render('profile', {name: req.decoded.name});
+    Book.find({'user_ids': user_id}, function(err, books) {
+      console.log(books);
+      res.render('profile', {name: req.decoded.name, books: books});
+    });
   });
-  // console.log("coming from profile",req.decoded)
 });
+  // Book.find({'user_ids[0]': user_id}, function(err, books) {
+  //   console.log('found the book ID!');
+  // });
 
 router.get('/books', function(req, res, next) {
 	Books.find({}, function(err, books){
@@ -91,7 +91,6 @@ router.get('/setup', function(req, res) {
   // save the sample user
   nick.save(function(err) {
     if (err) throw err;
-    console.log('User saved successfully');
     res.json({ success: true });
   });
 });
@@ -108,28 +107,30 @@ router.post('/new_user', function(req, res) {
     picture_url: req.body.picture_url,
   });
 
-  router.post('/new_book', function(req, res) {
-    var book = new Book({
-      title: req.body.title,
-      author: req.body.author,
-      year: req.body.year,
-      cover_url: req.body.cover_url,
-      publisher: req.body.publisher,
-      picture_history: req.body.picture_url,
-      for_trade: req.body.for_trade
-      // location_ids:
-      // user_ids: 
-    });
-  });
-
-
-
   user.save(function(err){
     if (err) throw err;
-
-    console.log('User Saved!');
     res.render('login', {name: "hi"});
   })
+});
+
+router.post('/new_book', function(req, res) {
+  console.log(user_id)
+  var book = new Book({
+    title: req.body.title,
+    author: req.body.author,
+    year: req.body.year,
+    cover_url: req.body.cover_url,
+    publisher: req.body.publisher,
+    picture_history: req.body.picture_url,
+    for_trade: req.body.for_trade,
+    user_ids: user_id
+    // location_ids: 
+  });
+    book.save(function(err){
+    if (err) throw err;
+    res.redirect('/profile/' + globalToken.name)
+  })
+
 });
 
 router.get('/users', function(req, res) {
@@ -141,7 +142,6 @@ router.get('/users', function(req, res) {
 router.post('/authenticate', function(req, res) {
   var name = req.body.name;
   var password = req.body.password;
-  // console.log(req.params.poo, 'is this poo?');
 
   User.findOne({
     name: name

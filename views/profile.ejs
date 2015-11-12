@@ -1,25 +1,31 @@
+
 <% include ./partials/header %>
 
 <h1>Welcome <%= name %></h1>
 
 <h2>Add Books You Are Reading To Trade with Others!</h2>
 
-<form name="new_book_form" action="/new_book" method="POST">
-   <input name="title" placeholder="Title">
-   <br><br>
-   <input name="author" placeholder="Author">
-   <br><br>
-   <input name="year" placeholder="Year">
-   <br><br>
-   <input name="cover_url" placeholder="Cover Picture URL ">
-   <br><br>
-   <input name="publisher" placeholder="Publisher">
-   <br><br>
-   <input name="picture_url" placeholder="Picture Of You With Book">
-   <br><br>
-   <select name="for_trade">For Trade?
-	  <option value="true">True</option>
-	  <option value="false">False</option>
-   </select>
-   <input class="submit-btn" type="submit" name="submit" value="Submit">
-</form>
+<div class="col-xs-8">
+	<form name="new_book_form" action="/new_book" method="POST">
+	   <input name="title" placeholder="Title">
+	   <br><br>
+	   <input name="author" placeholder="Author">
+	   <br><br>
+	   <input name="year" placeholder="Year">
+	   <br><br>
+	   <input name="cover_url" placeholder="Cover Picture URL ">
+	   <br><br>
+	   <input name="publisher" placeholder="Publisher">
+	   <br><br>
+	   <input name="picture_url" placeholder="Picture Of You With Book">
+	   <br><br>
+	   <select name="for_trade">For Trade?
+		  <option value="true">True</option>
+		  <option value="false">False</option>
+	   </select>
+	   <input class="submit-btn" type="submit" name="submit" value="Submit">
+	</form>
+</div>
+<div class="col-xs-4" id="green">
+<li><%= books %></li>
+</div>
