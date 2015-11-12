@@ -22,7 +22,7 @@ router.get('/new', function(req, res) {
 })
 
 router.get('/login', function(req, res) {
-  res.render('login');
+  res.render('login', {name: "hi"});
 //    // User.findOne({'name': name }, function(err, users) {
 //    //    console.log(users);
 //    // }
@@ -44,9 +44,9 @@ router.get('/*' , function(req, res, next) {
       } else {
         // if everything is good, save to request for use in other routes
         req.decoded = decoded;
-        console.log(decoded)    
+        // console.log(decoded)    
         next();
-        console.log('authenticated token')
+        // console.log('authenticated token')
       }
     });
 
@@ -63,17 +63,16 @@ router.get('/*' , function(req, res, next) {
 });
 
 router.get('/logout', function(req,res,next) {
-  token.body = ""
+  globalToken.token = ""
   res.redirect('login')
 })
 
-router.get('/profile', function(req, res, next) {
-  console.log(req.headers.cookie)
-  console.log(globalToken)
+router.get('/profile/:name', function(req, res, next) {
+  // console.log(globalToken)
   User.findOne({'name': req.decoded.name}, function(err, users) {
     res.render('profile', {name: req.decoded.name});
   });
-  console.log("coming from profile",req.decoded)
+  // console.log("coming from profile",req.decoded)
 });
 
 router.get('/books', function(req, res, next) {
@@ -109,11 +108,27 @@ router.post('/new_user', function(req, res) {
     picture_url: req.body.picture_url,
   });
 
+  router.post('/new_book', function(req, res) {
+    var book = new Book({
+      title: req.body.title,
+      author: req.body.author,
+      year: req.body.year,
+      cover_url: req.body.cover_url,
+      publisher: req.body.publisher,
+      picture_history: req.body.picture_url,
+      for_trade: req.body.for_trade
+      // location_ids:
+      // user_ids: 
+    });
+  });
+
+
+
   user.save(function(err){
     if (err) throw err;
 
     console.log('User Saved!');
-    res.render('login');
+    res.render('login', {name: "hi"});
   })
 });
 
@@ -126,6 +141,7 @@ router.get('/users', function(req, res) {
 router.post('/authenticate', function(req, res) {
   var name = req.body.name;
   var password = req.body.password;
+  // console.log(req.params.poo, 'is this poo?');
 
   User.findOne({
     name: name
@@ -150,10 +166,10 @@ router.post('/authenticate', function(req, res) {
           });
 
           req.headers.cookie = req.body.name
-          console.log(req.headers.cookie)
 
           globalToken = { token: token, name: req.body.name }
-          res.redirect('/profile')
+
+          res.redirect('/profile/' + globalToken.name)
         }
       });
 
