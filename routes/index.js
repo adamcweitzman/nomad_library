@@ -11,7 +11,9 @@ var User = require('../model/user');
 var jwt = require('jsonwebtoken');
 var config = require('../config');
 var bcrypt = require('bcrypt');
+var Location = require('../model/location');
 var user_id = "";
+var location_ids = "";
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -25,6 +27,26 @@ router.get('/new', function(req, res) {
 router.get('/login', function(req, res) {
   res.render('login', {name: "hi"});
 });
+
+router.get('/logout', function(req,res,next) {
+  globalToken.token = ""
+  res.redirect('login')
+});
+
+router.get('/books', function(req, res, next) {
+  Book.find({}, function(err, books){
+    var books = books
+    res.json(books)
+  });
+});
+
+router.get('/library', function(req, res, next) {
+  Location.find({'name': 'saigon'}, function(err, locations) {
+    console.log(locations[0].picture_url, 'this is the picture URL');
+    res.render('library',{picture: locations[0].picture_url,});
+  });
+});
+
 
 // route middleware to verify a token
 router.get('/*' , function(req, res, next) {
@@ -57,29 +79,13 @@ router.get('/*' , function(req, res, next) {
   }
 });
 
-router.get('/logout', function(req,res,next) {
-  globalToken.token = ""
-  res.redirect('login')
-});
-
 router.get('/profile/:name', function(req, res, next) {
   user_id = req.decoded._id
   User.findOne({'name': req.decoded.name}, function(err, users) {
     Book.find({'user_ids': user_id}, function(err, books) {
-      console.log(books);
       res.render('profile', {name: req.decoded.name, books: books});
     });
   });
-});
-  // Book.find({'user_ids[0]': user_id}, function(err, books) {
-  //   console.log('found the book ID!');
-  // });
-
-router.get('/books', function(req, res, next) {
-	Books.find({}, function(err, books){
-		var books = books
-		res.json(books)
-	});
 });
 
 // create a sample user
@@ -114,7 +120,8 @@ router.post('/new_user', function(req, res) {
 });
 
 router.post('/new_book', function(req, res) {
-  console.log(user_id)
+  console.log(req.body.locations)
+
   var book = new Book({
     title: req.body.title,
     author: req.body.author,
@@ -123,8 +130,8 @@ router.post('/new_book', function(req, res) {
     publisher: req.body.publisher,
     picture_history: req.body.picture_url,
     for_trade: req.body.for_trade,
-    user_ids: user_id
-    // location_ids: 
+    user_ids: user_id,
+    location_ids: req.body.locations
   });
     book.save(function(err){
     if (err) throw err;

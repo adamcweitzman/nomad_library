@@ -1,31 +1,65 @@
 
 <% include ./partials/header %>
 
-<h1>Welcome <%= name %></h1>
 
-<h2>Add Books You Are Reading To Trade with Others!</h2>
+<div class="row">
+	<div class="col-xs-1"></div>
+	<div class="col-xs-4">
+		<h1>Welcome <%= name.toUpperCase() %></h1>
+		<h2>Add Books To Trade!</h2>
+		<form name="new_book_form" action="/new_book" method="POST">
+		   <input name="title" placeholder="Title">
+		   <br><br>
+		   <input name="author" placeholder="Author">
+		   <br><br>
+		   <input name="year" placeholder="Year">
+		   <br><br>
+		   <input name="cover_url" placeholder="Cover Picture URL ">
+		   <br><br>
+		   <input name="publisher" placeholder="Publisher">
+		   <br><br>
+		   <input name="picture_url" placeholder="Picture Of You With Book">
+		   <br><br>
+		   <select name="locations" id='locations'>
+			  <option value="saigon">Saigon</option>
+			  <option value="paris">Paris</option>
+			  <option value="bogota">Bogota</option>
+		   </select>
+		   <select name="for_trade">For Trade?
+			  <option value="true">True</option>
+			  <option value="false">False</option>
+		   </select>
+		   <input class="submit-btn" type="submit" name="submit" value="Submit">
+		</form>
+	</div>
+	<div class="col-xs-7" id="green">
+		<div class="col-xs-2"></div>
+			<div class="col-xs-10">
+				<h2>My Books</h2>
+				<% for(var i=0; i < books.length; i++) { %>
+					<div class="col-xs-6">
+					 	<li class="list-unstyled"><img src="<%= books[i].cover_url %>"></li>
+					</div>
+				<% } %>
 
-<div class="col-xs-8">
-	<form name="new_book_form" action="/new_book" method="POST">
-	   <input name="title" placeholder="Title">
-	   <br><br>
-	   <input name="author" placeholder="Author">
-	   <br><br>
-	   <input name="year" placeholder="Year">
-	   <br><br>
-	   <input name="cover_url" placeholder="Cover Picture URL ">
-	   <br><br>
-	   <input name="publisher" placeholder="Publisher">
-	   <br><br>
-	   <input name="picture_url" placeholder="Picture Of You With Book">
-	   <br><br>
-	   <select name="for_trade">For Trade?
-		  <option value="true">True</option>
-		  <option value="false">False</option>
-	   </select>
-	   <input class="submit-btn" type="submit" name="submit" value="Submit">
-	</form>
+				<% for(var i=0; i < books.length; i++) { %>
+					
+					<div class="col-xs-6">
+						   <ul class="list-unstyled">
+						     <li>Title: <%= books[i].title %></li>
+						     <li>Author: <%= books[i].author %></li>  
+						     <li>Year: <%= books[i].year %></li>
+						     <li><%= books[i].publisher %></li>
+						     <li><%= books[i].picture_history %></li>
+						     <li>For Trade?: <%= books[i].for_trade %></li>
+						     <li>Location: <%= books[i].location_ids %></li>
+						   </ul>
+					</div>
+				<% } %>
+				
+			</div>
+	</div>
 </div>
-<div class="col-xs-4" id="green">
-<li><%= books %></li>
-</div>
+			
+
+<% include ./partials/footer %>
